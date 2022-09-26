@@ -36,6 +36,8 @@
 
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
 
 #include "image_transport/camera_common.hpp"
 #include "image_transport/subscriber_filter.hpp"
@@ -52,11 +54,12 @@ struct CameraSubscriber::Impl
 {
   using Image = sensor_msgs::msg::Image;
   using CameraInfo = sensor_msgs::msg::CameraInfo;
-  using TimeSync = message_filters::TimeSynchronizer<Image, CameraInfo>;
+  // using TimeSync = message_filters::TimeSynchronizer<Image, CameraInfo>;
+  using TimeSync = message_filters::Synchronizer<message_filters::sync_policies::ApproximateTime<Image, CameraInfo>>;
 
   Impl(rclcpp::Node* node)
   : logger_(node->get_logger()) ,
-    sync_(10),
+    sync_(3),
     unsubscribed_(false),
     image_received_(0), info_received_(0), both_received_(0)
   {

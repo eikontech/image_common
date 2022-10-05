@@ -105,8 +105,15 @@ Publisher::Publisher(
 {
   // Resolve the name explicitly because otherwise the compressed topics don't remap
   // properly (#3652).
+  std::string effective_namespace = node->get_effective_namespace();
+  if (effective_namespace.length() > 1 && effective_namespace.back() == '/')
+    effective_namespace.pop_back();
+  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " effective_namespace " << effective_namespace);
+
+  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " base_topic " << base_topic);
   std::string image_topic = rclcpp::expand_topic_or_service_name(base_topic,
-      node->get_name(), node->get_namespace());
+      node->get_name(), effective_namespace);
+  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " image_topic " << image_topic);
   impl_->base_topic_ = image_topic;
   impl_->loader_ = loader;
 

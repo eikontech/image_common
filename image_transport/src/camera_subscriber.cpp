@@ -123,17 +123,20 @@ CameraSubscriber::CameraSubscriber(
 {
   // Must explicitly remap the image topic since we then do some string manipulation on it
   // to figure out the sibling camera_info topic.
+  std::string effective_namespace = node->get_effective_namespace();
+  if (effective_namespace.length() > 1 && effective_namespace.back() == '/')
+    effective_namespace.pop_back();
+  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " effective_namespace " << effective_namespace);
+
+  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " base_topic " << base_topic);
   std::string image_topic = rclcpp::expand_topic_or_service_name(base_topic,
-      node->get_name(), node->get_namespace());
+      node->get_name(), effective_namespace);
+    
   RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " image_topic " << image_topic);
   std::string info_topic = getCameraInfoTopic(image_topic);
-  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " info_topic before " << info_topic);
+  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " info_topic " << info_topic);
 
   impl_->image_sub_.subscribe(node, image_topic, transport, custom_qos);
-
-  info_topic = getCameraInfoTopic(impl_->image_sub_.getTopic());
-  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " info_topic after " << info_topic);
-
   impl_->info_sub_.subscribe(node, info_topic, custom_qos);
 
   impl_->sync_.connectInput(impl_->image_sub_, impl_->info_sub_);

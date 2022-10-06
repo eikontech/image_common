@@ -87,18 +87,10 @@ CameraPublisher::CameraPublisher(
 {
   // Explicitly resolve name here so we compute the correct CameraInfo topic when the
   // image topic is remapped (#4539).
-  std::string effective_namespace = node->get_effective_namespace();
-  if (effective_namespace.length() > 1 && effective_namespace.back() == '/')
-    effective_namespace.pop_back();
-  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " effective_namespace " << effective_namespace);
-
-  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " base_topic " << base_topic);
   std::string image_topic = rclcpp::expand_topic_or_service_name(base_topic,
-      node->get_name(), effective_namespace);
-
+      node->get_name(), node->get_namespace());
   RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " image_topic " << image_topic);
   std::string info_topic = getCameraInfoTopic(image_topic);
-  RCLCPP_INFO_STREAM(node->get_logger(), __FUNCTION__ << " info_topic " << info_topic);
   
   auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(custom_qos), custom_qos);
   impl_->image_pub_ = image_transport::create_publisher(node, image_topic, custom_qos);
